@@ -47,9 +47,20 @@ import quickfix.SessionSettings;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+import org.opentradingsolutions.log4fix.core.GlazedListsMemoryLogModel;
 import org.opentradingsolutions.log4fix.datadictionary.SettingDataDictionaryLoader;
+import org.opentradingsolutions.log4fix.importer.Importer;
+import org.opentradingsolutions.log4fix.importer.ImporterMemoryLog;
+import org.opentradingsolutions.log4fix.importer.ImporterModel;
+import org.opentradingsolutions.log4fix.importer.PassThroughSessionIdResolver;
+import org.opentradingsolutions.log4fix.importer.SessionIdResolver;
+import quickfix.ConfigError;
+import quickfix.FileLogFactory;
+import quickfix.FileUtil;
 
 /**
  * Here is an example of how you might integrate Log4FIX with your QuickFIX/J
@@ -140,12 +151,13 @@ public class Log4FIX {
      * @see #getLogFactory()
      * @see #show()
      */
-    public static Log4FIX createForImport(SessionSettings sessionSettings)
+    public static Log4FIX createForImport(SessionSettings sessionSettings) throws ConfigError
     {
         Map<SessionID, MemoryLogModel> memoryLogModelsBySessionId=MemoryLogModelFactory.getMemoryLogModels(sessionSettings);
+        SettingDataDictionaryLoader dictionaryLoader= new SettingDataDictionaryLoader(sessionSettings);
         
         Log4FIX log4FIX = new Log4FIX();
-        log4FIX.logFactory = new MemoryLogFactory(memoryLogModelsBySessionId, new SettingDataDictionaryLoader(sessionSettings));
+        log4FIX.logFactory = new MemoryLogFactory(memoryLogModelsBySessionId,dictionaryLoader);
 
         ViewBuilder viewBuilder = new ViewBuilder();
 
@@ -159,6 +171,21 @@ public class Log4FIX {
             SessionID sessionID = entrySet.getKey();
             MemoryLogModel memoryLogModel = entrySet.getValue();
             
+            SessionIdResolver sessionIdResolver = new PassThroughSessionIdResolver();
+            ImporterMemoryLog importerMemoryLog = new ImporterMemoryLog(memoryLogModel, dictionaryLoader);
+            importerMemoryLog.setSessionId(sessionID);
+            
+            ImporterModel model = new ImporterModel(importerMemoryLog, sessionIdResolver);
+            ImporterController controller = new ImporterController(new Importer(sessionID), model);
+            
+            Properties properties= sessionSettings.getSessionProperties(sessionID, true);
+            String path = properties.getProperty(FileLogFactory.SETTING_FILE_LOG_PATH);
+            String sessionName = FileUtil.sessionIdFileName(sessionID);
+            String prefix = FileUtil.fileAppendPath(path, sessionName + ".");
+            String messagesFileName = prefix +"messages.log";                
+            File file = new File(messagesFileName);
+            
+            controller.importWithFile(file);
         }
 
         return log4FIX;

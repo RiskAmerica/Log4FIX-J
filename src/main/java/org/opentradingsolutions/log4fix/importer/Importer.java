@@ -37,6 +37,7 @@ package org.opentradingsolutions.log4fix.importer;
 import java.io.InputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import quickfix.SessionID;
 
 /**
  * @author Brian M. Coyner
@@ -48,6 +49,13 @@ public class Importer {
     private Thread producer;
     private ImporterCallback callback;
 
+    private SessionID sessionID;
+    
+     public Importer(SessionID sessionID) {
+        this();
+        this.sessionID=sessionID;
+    }
+     
     public Importer() {
         this(new LinkedBlockingQueue<String>());
     }
@@ -61,7 +69,9 @@ public class Importer {
 
         producer = new Thread(new LogMessageParser(is, queue));
 
-        Thread consumer = new Thread(new LogMessageBuilder(model, queue));
+        LogMessageBuilder logMessageBuilder=new LogMessageBuilder(model, queue);
+        logMessageBuilder.setSenderSessionId(sessionID);
+        Thread consumer = new Thread(logMessageBuilder);
 
         callback.starting();
         producer.start();

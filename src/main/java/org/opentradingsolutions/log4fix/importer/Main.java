@@ -62,7 +62,8 @@ public class Main {
    public static void main(String[] args) throws Exception {
 
         String pathToFile = args.length > 0 ? args[0] : null;
-        //pathToFile = "/opt/riskamerica/bcs_fix/BolsaFIX/src/main/resources/fixDevelopmentSettings.ini";
+        pathToFile = "/opt/riskamerica/bcs_fix/BolsaFIX/src/main/resources/fixDevelopmentSettings.ini";
+        //pathToFile = "/var/log/riskamerica/fix/log/FIX.4.4-MDRFDICTUCCERT-BCSG-TELERRENTA.messages.log";
         if (pathToFile != null && pathToFile.endsWith(".ini")) {
             loadFromSetting(pathToFile);
         } else {

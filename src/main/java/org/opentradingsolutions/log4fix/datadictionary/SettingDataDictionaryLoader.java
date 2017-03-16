@@ -15,8 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
-import quickfix.FileLogFactory;
-import quickfix.FileUtil;
 import quickfix.SessionID;
 import quickfix.SessionSettings;
 
@@ -37,11 +35,9 @@ public class SettingDataDictionaryLoader implements DataDictionaryLoader{
         {
             try {
                 Properties properties= sessionSetting.getSessionProperties(sessionId, true);
-                String path = properties.getProperty(FileLogFactory.SETTING_FILE_LOG_PATH);
-                String sessionName = FileUtil.sessionIdFileName(sessionId);
-                String prefix = FileUtil.fileAppendPath(path, sessionName + ".");
-                String messagesFileName = prefix +"messages.log";                
-                File file = new File(messagesFileName);
+                
+                String path = properties.getProperty("DataDictionary");                      
+                File file = new File(path);
                 this.cached.put(sessionId,new DataDictionary(new FileInputStream(file)));
             } catch (FileNotFoundException | ConfigError ex) {
                 Logger.getLogger(SettingDataDictionaryLoader.class.getName()).log(Level.SEVERE, null, ex);

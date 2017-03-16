@@ -61,6 +61,11 @@ public class LogMessageBuilder implements Runnable {
         this.fixMessages = fixMessages;
     }
 
+    public void setSenderSessionId(SessionID senderSessionId) {
+        this.senderSessionId = senderSessionId;
+    }
+    
+
     public void run() {
 
         ImporterMemoryLog logger = model.getImporterMemoryLog();
