@@ -47,7 +47,8 @@ import java.util.Map;
  * @author Brian M. Coyner
  */
 public class ClassPathDataDictionaryLoader implements DataDictionaryLoader {
-
+    public final static String TARGET_BCSG="BCSG";
+     
     private final Map<String, DataDictionary> dictionaryCache;
 
     public ClassPathDataDictionaryLoader() {
@@ -74,12 +75,29 @@ public class ClassPathDataDictionaryLoader implements DataDictionaryLoader {
         }
 
         String dictionaryFileName = beginString.replaceAll("\\.", "") + ".xml";
+        
+        InputStream ddis=null;
+        if(sessionId.getTargetCompID()!=null && sessionId.getTargetCompID().length()>0)
+        {
+            String customDictionaryFileName=dictionaryFileName.replaceAll("\\.", "-"+sessionId.getTargetCompID()+".");
+            ddis = getClass().getClass().getResourceAsStream(customDictionaryFileName);            
+        }       
+        if(ddis==null)
+        {
+            ddis = Thread.currentThread().getContextClassLoader().getResourceAsStream(dictionaryFileName);
+            if (ddis == null) {
+                throw new NullPointerException("Data Dictionary file '" + dictionaryFileName + "' not found at root of CLASSPATH.");
+            }
+            
+        }
+        
+        if(TARGET_BCSG.equals(sessionId.getTargetCompID()))
+            dictionaryFileName = dictionaryFileName.replaceAll("\\.", "") + ".xml";
+             
+         
 
         // the dictionary is loaded from the QuickFIX JAR file.
-        InputStream ddis = Thread.currentThread().getContextClassLoader().getResourceAsStream(dictionaryFileName);
-        if (ddis == null) {
-            throw new NullPointerException("Data Dictionary file '" + dictionaryFileName + "' not found at root of CLASSPATH.");
-        }
+        
 
         try {
             dictionary = new DataDictionary(ddis);

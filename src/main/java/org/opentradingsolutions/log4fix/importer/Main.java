@@ -42,6 +42,10 @@ import org.opentradingsolutions.log4fix.datadictionary.DataDictionaryLoader;
 import org.opentradingsolutions.log4fix.ui.importer.ImporterController;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import quickfix.ConfigError;
+import quickfix.SessionSettings;
 
 /**
  * @author Brian M. Coyner
@@ -55,8 +59,28 @@ public class Main {
      * @param args may contain a single absolute path to a log file that automatically imports.
      * @throws Exception if the application fails to start.
      */
-    public static void main(String[] args) throws Exception {
+   public static void main(String[] args) throws Exception {
 
+        String pathToFile = args.length > 0 ? args[0] : null;
+        //pathToFile = "/opt/riskamerica/bcs_fix/BolsaFIX/src/main/resources/fixDevelopmentSettings.ini";
+        if (pathToFile != null && pathToFile.endsWith(".ini")) {
+            loadFromSetting(pathToFile);
+        } else {
+            loadFromImport(pathToFile);
+        }
+    }
+
+    public static void loadFromSetting(String fixSettingFileName) throws FileNotFoundException, ConfigError {
+        File initialFile = new File(fixSettingFileName);
+        if (initialFile.exists()) {
+            FileInputStream ddis = new FileInputStream(initialFile);
+            SessionSettings sessionSetting = new SessionSettings(ddis);
+            Log4FIX forImport = Log4FIX.createForImport(sessionSetting);
+            forImport.show();
+        }
+    }
+
+    public static void loadFromImport(String fixSettingFileName) throws FileNotFoundException, ConfigError {
         DataDictionaryLoader dictionaryLoader = new ClassPathDataDictionaryLoader();
         SessionIdResolver sessionIdResolver = new PassThroughSessionIdResolver();
 
@@ -68,13 +92,12 @@ public class Main {
         Log4FIX forImport = Log4FIX.createForImport(memoryLogModel, controller);
         forImport.show();
 
-        if (args.length == 1) {
-            String pathToFile = args[0];
-            File file = new File(pathToFile);
+        if (fixSettingFileName != null) {
+            File file = new File(fixSettingFileName);
             if (file.exists()) {
                 controller.importWithFile(file);
             } else {
-                importerMemoryLog.onEvent("File Not Found: " + pathToFile);
+                importerMemoryLog.onEvent("File Not Found: " + fixSettingFileName);
             }
         }
     }

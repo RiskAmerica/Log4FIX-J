@@ -49,6 +49,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
 import java.util.Map;
+import org.opentradingsolutions.log4fix.datadictionary.SettingDataDictionaryLoader;
 
 /**
  * Here is an example of how you might integrate Log4FIX with your QuickFIX/J
@@ -128,6 +129,40 @@ public class Log4FIX {
         log4FIX.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         return log4FIX;
+    }
+    
+    /**
+     * Factory method that creates a Log4FIX instance for displaying log from imported
+     * FIX messages.
+     *
+     * @param sessionSettings
+     * @return an instance that is ready to display real-time messages.
+     * @see #getLogFactory()
+     * @see #show()
+     */
+    public static Log4FIX createForImport(SessionSettings sessionSettings)
+    {
+        Map<SessionID, MemoryLogModel> memoryLogModelsBySessionId=MemoryLogModelFactory.getMemoryLogModels(sessionSettings);
+        
+        Log4FIX log4FIX = new Log4FIX();
+        log4FIX.logFactory = new MemoryLogFactory(memoryLogModelsBySessionId, new SettingDataDictionaryLoader(sessionSettings));
+
+        ViewBuilder viewBuilder = new ViewBuilder();
+
+        final Iterator<MemoryLogModel> memoryLogModels = memoryLogModelsBySessionId.values().iterator();
+
+        log4FIX.frame = new JFrame("Log4FIX");
+        log4FIX.frame.add(viewBuilder.createView(memoryLogModels), BorderLayout.CENTER);
+        log4FIX.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
+        for (Map.Entry<SessionID, MemoryLogModel> entrySet : memoryLogModelsBySessionId.entrySet()) {
+            SessionID sessionID = entrySet.getKey();
+            MemoryLogModel memoryLogModel = entrySet.getValue();
+            
+        }
+
+        return log4FIX;
+         
     }
 
     /**
