@@ -137,7 +137,7 @@ public class Log4FIX {
 
         log4FIX.frame = new JFrame("Log4FIX");
         log4FIX.frame.add(viewBuilder.createView(memoryLogModels), BorderLayout.CENTER);
-        log4FIX.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        log4FIX.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         return log4FIX;
     }
@@ -165,7 +165,7 @@ public class Log4FIX {
 
         log4FIX.frame = new JFrame("Log4FIX");
         log4FIX.frame.add(viewBuilder.createView(memoryLogModels), BorderLayout.CENTER);
-        log4FIX.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        log4FIX.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         for (Map.Entry<SessionID, MemoryLogModel> entrySet : memoryLogModelsBySessionId.entrySet()) {
             SessionID sessionID = entrySet.getKey();
@@ -216,7 +216,7 @@ public class Log4FIX {
         buttonPanel.add(controller.getBusyIcon());
 
         log4FIX.frame.add(buttonPanel, BorderLayout.NORTH);
-        log4FIX.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        log4FIX.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         return log4FIX;
     }
 
