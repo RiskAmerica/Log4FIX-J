@@ -34,6 +34,9 @@
 
 package org.opentradingsolutions.log4fix.datadictionary;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
 import quickfix.FixVersions;
@@ -42,6 +45,8 @@ import quickfix.SessionID;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Brian M. Coyner
@@ -79,8 +84,13 @@ public class ClassPathDataDictionaryLoader implements DataDictionaryLoader {
         InputStream ddis=null;
         if(sessionId.getTargetCompID()!=null && sessionId.getTargetCompID().length()>0)
         {
-            String customDictionaryFileName=dictionaryFileName.replaceAll("\\.", "-"+sessionId.getTargetCompID()+".");
-            ddis = getClass().getClass().getResourceAsStream(customDictionaryFileName);            
+            try {
+                String customDictionaryFileName=dictionaryFileName.replaceAll("\\.", "-"+sessionId.getTargetCompID()+".");
+                File file=new File(customDictionaryFileName);
+                ddis = new FileInputStream(file);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(ClassPathDataDictionaryLoader.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }       
         if(ddis==null)
         {
@@ -91,14 +101,6 @@ public class ClassPathDataDictionaryLoader implements DataDictionaryLoader {
             
         }
         
-        if(TARGET_BCSG.equals(sessionId.getTargetCompID()))
-            dictionaryFileName = dictionaryFileName.replaceAll("\\.", "") + ".xml";
-             
-         
-
-        // the dictionary is loaded from the QuickFIX JAR file.
-        
-
         try {
             dictionary = new DataDictionary(ddis);
             dictionaryCache.put(beginString, dictionary);
