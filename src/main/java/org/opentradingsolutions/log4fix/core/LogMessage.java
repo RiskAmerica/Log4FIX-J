@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class LogMessage implements Comparable {
 
-    public static final char DEFAULT_DELIMETER = '|';
+    public static final char DEFAULT_DELIMETER = (char) 0x2605 ;
     public static final char SOH_DELIMETER = (char) 0x01;
 
     public static final String INCOMING = "incoming";
@@ -159,8 +159,11 @@ public class LogMessage implements Comparable {
         List<LogField> logFields = new ArrayList<LogField>();
 
         Map<Integer, Field> allFields = getAllFields(message);
-
-        String[] fields = rawMessage.split("\\|");
+        
+        //String delimiter="\\|";
+        String delimiter=String.format("%c", DEFAULT_DELIMETER);
+        
+        String[] fields = rawMessage.split(delimiter);
 
         for (String fieldString : fields) {
             int indexOfEqual = fieldString.indexOf('=');
